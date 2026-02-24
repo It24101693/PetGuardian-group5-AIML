@@ -1,0 +1,62 @@
+# Java
+*.class
+*.jar
+*.war
+*.nar
+*.zip
+*.tar.gz
+*.rar
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+target/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Maven
+mvn-*
+pom.xml.backup
+
+# Node
+node_modules/
+package-lock.json
+yarn.lock
+build/
+dist/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Cache
+.cache
+.eslintcache
