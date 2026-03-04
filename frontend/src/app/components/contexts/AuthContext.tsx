@@ -5,23 +5,24 @@ export interface User {
     id: number;
     name: string;
     email: string;
-    role: 'owner' | 'vet';
+    role: 'owner' | 'vet' | 'admin';
     clinicId?: string;
 }
 
 interface AuthContextType {
     user: User | null;
-    login: (email: string, password: string, role: 'owner' | 'vet') => Promise<void>;
+    login: (email: string, password: string, role: 'owner' | 'vet' | 'admin') => Promise<void>;
     register: (name: string, email: string, password: string, role: 'owner' | 'vet', clinicId?: string) => Promise<void>;
     logout: () => void;
 }
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
 
-    const login = async (email: string, password: string, role: 'owner' | 'vet') => {
+    const login = async (email: string, password: string, role: 'owner' | 'vet' | 'admin') => {
         const response = await fetch('http://localhost:8080/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -51,8 +52,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         const data = await response.json();
-        setUser(data);
-        localStorage.setItem('user', JSON.stringify(data));
+        // Return data instead of logging in automatically
+        return data;
     };
 
     const logout = () => {

@@ -29,4 +29,5 @@ public class PetPassportDTO {
 
     private List<VaccinationDTO> vaccinations = new ArrayList<>();
     private List<AllergyDTO> allergies = new ArrayList<>();
+    private List<MedicalRecordDTO> medicalRecords = new ArrayList<>();
 }

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000") // Basic CORS for now
+@CrossOrigin(origins = { "http://localhost:3000", "http://localhost:5173" })
 public class AuthController {
 
     private final UserService userService;

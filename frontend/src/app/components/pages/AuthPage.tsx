@@ -7,7 +7,7 @@ import { Label } from '../ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 // import { RadioGroup, RadioGroupItem } from '../ui/radio-group'; // Replaced with custom buttons for better UI
-import { Heart, PawPrint, Shield, Star, Sparkles, ArrowRight, User as UserIcon, Stethoscope } from 'lucide-react';
+import { Heart, PawPrint, Shield, Star, Sparkles, ArrowRight, User as UserIcon, Stethoscope, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -29,19 +29,30 @@ export default function AuthPage() {
     const [regConfirmPassword, setRegConfirmPassword] = useState('');
     const [regRole, setRegRole] = useState<'owner' | 'vet'>('owner');
     const [regClinicId, setRegClinicId] = useState('');
+    const [registrationSuccess, setRegistrationSuccess] = useState(false);
+
+    // ── Predefined admin credentials (checked client-side for auto-routing)
+    const ADMIN_EMAIL = 'admin@petguardian.com';
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            await login(loginEmail, loginPassword, loginRole);
-            navigate(loginRole === 'owner' ? '/owner/dashboard' : '/vet/dashboard');
-        } catch (error) {
-            console.error('Login failed', error);
+            // If email matches admin, override role to 'admin'
+            const effectiveRole = loginEmail.toLowerCase() === ADMIN_EMAIL ? 'admin' : loginRole;
+            await login(loginEmail, loginPassword, effectiveRole);
+            if (effectiveRole === 'admin') {
+                navigate('/');
+            } else {
+                navigate(loginRole === 'owner' ? '/owner/dashboard' : '/vet/dashboard');
+            }
+        } catch (error: any) {
+            alert(error?.message || 'Login failed. Please check your credentials.');
         } finally {
             setIsLoading(false);
         }
     };
+
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -52,7 +63,16 @@ export default function AuthPage() {
         setIsLoading(true);
         try {
             await register(regName, regEmail, regPassword, regRole, regClinicId || undefined);
-            navigate(regRole === 'owner' ? '/owner/dashboard' : '/vet/dashboard');
+
+            // Switch to login tab and pre-fill details after successful registration
+            setLoginEmail(regEmail);
+            setLoginRole(regRole);
+            setLoginPassword('');
+            setRegPassword('');
+            setRegConfirmPassword('');
+            setActiveTab('login');
+            setRegistrationSuccess(true);
+
         } catch (error) {
             console.error('Registration failed', error);
         } finally {
@@ -176,7 +196,10 @@ export default function AuthPage() {
 
                         <Tabs
                             value={activeTab}
-                            onValueChange={(v) => setActiveTab(v as any)}
+                            onValueChange={(v) => {
+                                setActiveTab(v as any);
+                                setRegistrationSuccess(false);
+                            }}
                             className="w-full"
                         >
                             <TabsList className="grid w-full grid-cols-2 p-1 bg-muted/50 rounded-2xl mb-8">
@@ -195,25 +218,60 @@ export default function AuthPage() {
                                     {/* Login Tab Content */}
                                     {activeTab === 'login' && (
                                         <form onSubmit={handleLogin} className="space-y-6">
+                                            {registrationSuccess && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: -10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="p-4 rounded-2xl bg-teal-50 border-2 border-teal-100 flex items-start gap-4 shadow-sm"
+                                                >
+                                                    <div className="bg-teal-500/10 p-2 rounded-xl">
+                                                        <Sparkles className="size-5 text-teal-600" />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <h4 className="text-sm font-bold text-teal-900">Sign up successful!</h4>
+                                                        <p className="text-xs font-medium text-teal-700/80 leading-relaxed mt-0.5">
+                                                            Welcome to the pack. We've pre-filled your email.
+                                                        </p>
+                                                    </div>
+                                                </motion.div>
+                                            )}
                                             <div className="space-y-4">
-                                                <div className="grid grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-3 gap-3 mb-1">
                                                     <button
                                                         type="button"
                                                         onClick={() => setLoginRole('owner')}
-                                                        className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${loginRole === 'owner' ? 'border-primary bg-primary/5 shadow-inner' : 'border-transparent bg-muted/30 hover:bg-muted/50'}`}
+                                                        className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-1.5 ${loginRole === 'owner' && loginEmail.toLowerCase() !== 'admin@petguardian.com'
+                                                            ? 'border-primary bg-primary/5 shadow-inner'
+                                                            : 'border-transparent bg-muted/30 hover:bg-muted/50'
+                                                            }`}
                                                     >
-                                                        <UserIcon className={`size-6 ${loginRole === 'owner' ? 'text-primary' : 'text-muted-foreground'}`} />
-                                                        <span className={`text-sm font-bold ${loginRole === 'owner' ? 'text-primary' : 'text-muted-foreground'}`}>Owner</span>
+                                                        <UserIcon className={`size-5 ${loginRole === 'owner' ? 'text-primary' : 'text-muted-foreground'}`} />
+                                                        <span className={`text-xs font-bold ${loginRole === 'owner' ? 'text-primary' : 'text-muted-foreground'}`}>Owner</span>
                                                     </button>
                                                     <button
                                                         type="button"
                                                         onClick={() => setLoginRole('vet')}
-                                                        className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${loginRole === 'vet' ? 'border-primary bg-primary/5 shadow-inner' : 'border-transparent bg-muted/30 hover:bg-muted/50'}`}
+                                                        className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-1.5 ${loginRole === 'vet' && loginEmail.toLowerCase() !== 'admin@petguardian.com'
+                                                            ? 'border-primary bg-primary/5 shadow-inner'
+                                                            : 'border-transparent bg-muted/30 hover:bg-muted/50'
+                                                            }`}
                                                     >
-                                                        <Stethoscope className={`size-6 ${loginRole === 'vet' ? 'text-primary' : 'text-muted-foreground'}`} />
-                                                        <span className={`text-sm font-bold ${loginRole === 'vet' ? 'text-primary' : 'text-muted-foreground'}`}>Vet</span>
+                                                        <Stethoscope className={`size-5 ${loginRole === 'vet' ? 'text-primary' : 'text-muted-foreground'}`} />
+                                                        <span className={`text-xs font-bold ${loginRole === 'vet' ? 'text-primary' : 'text-muted-foreground'}`}>Vet</span>
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setLoginEmail('admin@petguardian.com')}
+                                                        className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-1.5 ${loginEmail.toLowerCase() === 'admin@petguardian.com'
+                                                            ? 'border-violet-500 bg-violet-50 shadow-inner'
+                                                            : 'border-transparent bg-muted/30 hover:bg-muted/50'
+                                                            }`}
+                                                    >
+                                                        <ShieldCheck className={`size-5 ${loginEmail.toLowerCase() === 'admin@petguardian.com' ? 'text-violet-600' : 'text-muted-foreground'}`} />
+                                                        <span className={`text-xs font-bold ${loginEmail.toLowerCase() === 'admin@petguardian.com' ? 'text-violet-600' : 'text-muted-foreground'}`}>Admin</span>
                                                     </button>
                                                 </div>
+
 
                                                 <div className="space-y-2">
                                                     <Label htmlFor="login-email" className="font-bold text-sm ml-1">Email Address</Label>

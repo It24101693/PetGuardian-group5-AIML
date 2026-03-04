@@ -7,6 +7,10 @@ import AIChatbot from './components/pages/AIChatbot';
 import VetDashboard from './components/pages/VetDashboard';
 import CommunityPage from './components/pages/CommunityPage';
 import VetSearchPage from './components/pages/VetSearchPage';
+import DirectChat from './components/pages/DirectChat';
+import AdminKnowledgeCenter from './components/pages/AdminKnowledgeCenter';
+import AdminDashboard from './components/pages/AdminDashboard';
+import NotificationHistoryPage from './components/pages/NotificationHistoryPage';
 
 export const router = createBrowserRouter([
     {
@@ -38,8 +42,24 @@ export const router = createBrowserRouter([
         Component: CommunityPage,
     },
     {
+        path: '/owner/chat/:userId',
+        Component: DirectChat,
+    },
+    {
+        path: '/admin/dashboard',
+        Component: AdminDashboard,
+    },
+    {
+        path: '/admin/knowledge',
+        Component: AdminKnowledgeCenter,
+    },
+    {
         path: '/vet/dashboard',
         Component: VetDashboard,
+    },
+    {
+        path: '/notifications',
+        Component: NotificationHistoryPage,
     },
     {
         path: '/vet/appointments',

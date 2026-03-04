@@ -1,4 +1,5 @@
-﻿import { useState } from 'react';
+﻿import * as React from 'react';
+import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { usePets } from '../contexts/PetContext';
@@ -105,8 +106,7 @@ export default function PetPassport() {
                 ...vaccinationForm
             });
         } else {
-            addVaccination({
-                petId: petId!,
+            addVaccination(petId!, {
                 ...vaccinationForm
             });
         }
@@ -142,8 +142,7 @@ export default function PetPassport() {
                 medications
             });
         } else {
-            addMedicalRecord({
-                petId: petId!,
+            addMedicalRecord(petId!, {
                 date: medicalForm.date,
                 type: medicalForm.type,
                 title: medicalForm.title,

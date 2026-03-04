@@ -1,13 +1,33 @@
-﻿import { Link } from 'react-router';
+﻿import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { QrCode, Bot, Users, Shield, Heart, Calendar, PawPrint } from 'lucide-react';
+import { QrCode, Bot, Users, Shield, Heart, Calendar, PawPrint, ShieldCheck, LogOut } from 'lucide-react';
 import { useScrollAnimation } from '../../hooks/useScrollAnimation';
+import { useAuth } from '../contexts/AuthContext';
+import { NotificationCenter } from '../NotificationCenter';
 
 export default function LandingPage() {
     const heroAnimation = useScrollAnimation();
     const featuresAnimation = useScrollAnimation();
     const vetsAnimation = useScrollAnimation();
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+
+    const [currentBg, setCurrentBg] = useState(0);
+    const backgrounds = ['/images/hero-bg.png', '/images/hero-bg-2.png'];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentBg((prev) => (prev + 1) % backgrounds.length);
+        }, 60000); // 1 minute
+        return () => clearInterval(interval);
+    }, []);
+
+    const handleLogout = () => {
+        logout();
+        navigate('/');
+    };
 
     return (
         <div className="min-h-screen bg-background">
@@ -18,53 +38,88 @@ export default function LandingPage() {
                         <Heart className="size-8 text-primary" fill="currentColor" />
                         <span className="text-2xl font-bold text-primary">PetGuardian 🐾</span>
                     </Link>
-                    <nav className="hidden md:flex items-center gap-6">
-                        <Link to="/auth" className="hover:text-primary transition-colors">Pet Owner</Link>
-                        <Link to="/search" className="hover:text-primary transition-colors font-medium">Find a Vet</Link>
-                        <a href="#for-vets" className="hover:text-primary transition-colors">For Vets</a>
-                        <Link to="/auth">
-                            <Button variant="outline">Login</Button>
-                        </Link>
-                        <Link to="/auth">
-                            <Button>Sign Up</Button>
-                        </Link>
+                    <nav className="hidden md:flex items-center gap-4">
+                        {user?.role === 'admin' ? (
+                            /* ── Admin is logged in ── */
+                            <>
+                                <Link to="/owner/dashboard">
+                                    <Button variant="ghost" size="sm">🐾 Pet Owner Page</Button>
+                                </Link>
+                                <Link to="/vet/dashboard">
+                                    <Button variant="ghost" size="sm">🩺 Vet Page</Button>
+                                </Link>
+                                <Link to="/admin/dashboard">
+                                    <Button variant="ghost" size="sm" className="text-violet-600 hover:text-violet-700 hover:bg-violet-50 font-bold">
+                                        <ShieldCheck className="size-4 mr-1.5" />
+                                        Admin Dashboard
+                                    </Button>
+                                </Link>
+                                {/* ADMIN badge */}
+                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-100 border border-violet-300 text-violet-700 text-sm font-bold">
+                                    🛡️ ADMIN
+                                </div>
+                                <NotificationCenter />
+                                <Button variant="outline" size="sm" onClick={handleLogout}>
+                                    <LogOut className="size-4 mr-1.5" />
+                                    Logout
+                                </Button>
+                            </>
+                        ) : (
+                            /* ── Regular visitor ── */
+                            <>
+                                <Link to="/auth" className="hover:text-primary transition-colors">Pet Owner</Link>
+                                <Link to="/search" className="hover:text-primary transition-colors font-medium">Find a Vet</Link>
+                                <a href="#for-vets" className="hover:text-primary transition-colors">For Vets</a>
+                                <Link to="/auth">
+                                    <Button variant="outline">Login</Button>
+                                </Link>
+                                <Link to="/auth">
+                                    <Button>Sign Up</Button>
+                                </Link>
+                            </>
+                        )}
                     </nav>
                 </div>
             </header>
 
+
             {/* Hero Section */}
-            <section className="py-20 px-4 bg-gradient-to-br from-primary/5 to-accent/10">
-                <div className="container mx-auto max-w-6xl">
-                    <div className="grid md:grid-cols-2 gap-12 items-center">
+            <section
+                className="py-24 px-4 bg-cover bg-right md:bg-center bg-no-repeat relative overflow-hidden flex items-center min-h-[600px] transition-all duration-1000 ease-in-out"
+                style={{ backgroundImage: `url('${backgrounds[currentBg]}')` }}
+            >
+                {/* Gradient overlay for text contrast - stronger on the left */}
+                <div className="absolute inset-0 bg-white/20 md:bg-linear-to-r md:from-white/95 md:to-white/10 transition-opacity duration-1000"></div>
+
+                <div className="container mx-auto max-w-6xl relative z-10">
+                    <div className="max-w-2xl">
                         <div className="animate-fade-in-left">
-                            <h1 className="text-5xl font-bold mb-4 leading-tight animate-fade-in-up">
-                                Your Pet's Complete Health Passport
+                            <h1 className="text-5xl md:text-6xl font-extrabold mb-6 leading-tight animate-fade-in-up text-slate-900">
+                                Your Pet's Complete <span className="text-primary text-shadow-sm">Health Passport</span>
                             </h1>
-                            <img
-                                src="https://www.petvet.lk/wp-content/uploads/2017/09/sitting-dog_1.5x-1.gif"
-                                alt="Cute sitting dog"
-                                className="w-24 md:w-32 mb-6 animate-bounce-in"
-                            />
-                            <p className="text-xl text-muted-foreground mb-8 animate-fade-in-up stagger-2">
+                            <div className="flex items-center gap-4 mb-6">
+                                <img
+                                    src="https://www.petvet.lk/wp-content/uploads/2017/09/sitting-dog_1.5x-1.gif"
+                                    alt="Cute sitting dog"
+                                    className="w-20 md:w-28 animate-bounce-in"
+                                />
+                                <div className="bg-white/70 backdrop-blur-md p-3 rounded-2xl border border-white/40 shadow-sm animate-fade-in-up stagger-1">
+                                    <span className="text-primary font-bold">New:</span> AI Symptom Analyzer ✨
+                                </div>
+                            </div>
+                            <p className="text-xl text-slate-700 mb-10 animate-fade-in-up stagger-2 leading-relaxed font-medium">
                                 Digital health records, AI-powered care insights, and instant veterinary connections - all in one place.
                             </p>
-                            <div className="flex gap-4 animate-fade-in-up stagger-3">
+                            <div className="flex flex-wrap gap-4 animate-fade-in-up stagger-3">
                                 <Link to="/auth">
-                                    <Button size="lg" className="text-lg px-8 hover-lift btn-press">
+                                    <Button size="lg" className="h-14 px-10 text-lg shadow-xl hover-glow btn-press rounded-2xl font-bold">
                                         Get Started Free
                                     </Button>
                                 </Link>
-                                <Button size="lg" variant="outline" className="text-lg px-8 hover-lift btn-press">
+                                <Button size="lg" variant="outline" className="h-14 px-10 text-lg shadow-md bg-white/80 backdrop-blur-md hover-lift btn-press rounded-2xl border-white font-semibold">
                                     Watch Demo
                                 </Button>
                             </div>
-                        </div>
-                        <div className="relative animate-fade-in-right">
-                            <img
-                                src="https://images.unsplash.com/photo-1625321171045-1fea4ac688e9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2ZXRlcmluYXJpYW4lMjBleGFtaW5pbmclMjBkb2d8ZW58MXx8fHwxNzcxOTM3MzQzfDA&ixlib=rb-4.1.0&q=80&w=1080"
-                                alt="Happy pet owner with veterinarian"
-                                className="rounded-2xl shadow-2xl w-full hover-scale transition-smooth"
-                            />
                         </div>
                     </div>
                 </div>

@@ -1,12 +1,15 @@
 package com.petguardian.service;
 
 import com.petguardian.model.dto.AllergyDTO;
+import com.petguardian.model.dto.MedicalRecordDTO;
 import com.petguardian.model.dto.PetPassportDTO;
 import com.petguardian.model.dto.VaccinationDTO;
 import com.petguardian.model.entity.Allergy;
+import com.petguardian.model.entity.MedicalRecord;
 import com.petguardian.model.entity.PetPassport;
 import com.petguardian.model.entity.Vaccination;
 import com.petguardian.repository.AllergyRepository;
+import com.petguardian.repository.MedicalRecordRepository;
 import com.petguardian.repository.PetPassportRepository;
 import com.petguardian.repository.VaccinationRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,7 @@ public class HealthPassportService {
     private final PetPassportRepository passportRepository;
     private final VaccinationRepository vaccinationRepository;
     private final AllergyRepository allergyRepository;
+    private final MedicalRecordRepository medicalRecordRepository;
 
     @Transactional(readOnly = true)
     public List<PetPassportDTO> getAllPassports() {
@@ -56,6 +60,13 @@ public class HealthPassportService {
                 Allergy a = new Allergy();
                 mapAllergyToEntity(aDto, a);
                 passport.addAllergy(a);
+            });
+        }
+        if (dto.getMedicalRecords() != null) {
+            dto.getMedicalRecords().forEach(mDto -> {
+                MedicalRecord m = new MedicalRecord();
+                mapMedicalRecordToEntity(mDto, m);
+                passport.addMedicalRecord(m);
             });
         }
 
@@ -122,6 +133,27 @@ public class HealthPassportService {
         allergyRepository.deleteById(id);
     }
 
+    @Transactional
+    public void addMedicalRecord(Long passportId, MedicalRecordDTO dto) {
+        PetPassport passport = passportRepository.findById(passportId).orElseThrow();
+        MedicalRecord m = new MedicalRecord();
+        mapMedicalRecordToEntity(dto, m);
+        passport.addMedicalRecord(m);
+        passportRepository.save(passport);
+    }
+
+    @Transactional
+    public void updateMedicalRecord(Long id, MedicalRecordDTO dto) {
+        MedicalRecord m = medicalRecordRepository.findById(id).orElseThrow();
+        mapMedicalRecordToEntity(dto, m);
+        medicalRecordRepository.save(m);
+    }
+
+    @Transactional
+    public void deleteMedicalRecord(Long id) {
+        medicalRecordRepository.deleteById(id);
+    }
+
     // --- Mapping Helpers ---
 
     private void mapToEntity(PetPassportDTO dto, PetPassport e) {
@@ -178,6 +210,10 @@ public class HealthPassportService {
         if (e.getAllergies() != null) {
             dto.setAllergies(e.getAllergies().stream().map(this::mapAllergyToDTO).collect(Collectors.toList()));
         }
+        if (e.getMedicalRecords() != null) {
+            dto.setMedicalRecords(
+                    e.getMedicalRecords().stream().map(this::mapMedicalRecordToDTO).collect(Collectors.toList()));
+        }
         return dto;
     }
 
@@ -218,6 +254,27 @@ public class HealthPassportService {
         dto.setName(e.getName());
         dto.setSeverity(e.getSeverity());
         dto.setNotes(e.getNotes());
+        return dto;
+    }
+
+    private void mapMedicalRecordToEntity(MedicalRecordDTO dto, MedicalRecord e) {
+        e.setDate(dto.getDate());
+        e.setType(dto.getType());
+        e.setTitle(dto.getTitle());
+        e.setDescription(dto.getDescription());
+        e.setVeterinarian(dto.getVeterinarian());
+        e.setMedications(dto.getMedications());
+    }
+
+    private MedicalRecordDTO mapMedicalRecordToDTO(MedicalRecord e) {
+        MedicalRecordDTO dto = new MedicalRecordDTO();
+        dto.setId(e.getId());
+        dto.setDate(e.getDate());
+        dto.setType(e.getType());
+        dto.setTitle(e.getTitle());
+        dto.setDescription(e.getDescription());
+        dto.setVeterinarian(e.getVeterinarian());
+        dto.setMedications(e.getMedications());
         return dto;
     }
 }

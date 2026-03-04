@@ -83,6 +83,9 @@ public class PetPassport {
     @OneToMany(mappedBy = "petPassport", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Allergy> allergies = new ArrayList<>();
 
+    @OneToMany(mappedBy = "petPassport", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MedicalRecord> medicalRecords = new ArrayList<>();
+
     public void addVaccination(Vaccination vaccination) {
         vaccinations.add(vaccination);
         vaccination.setPetPassport(this);
@@ -91,5 +94,10 @@ public class PetPassport {
     public void addAllergy(Allergy allergy) {
         allergies.add(allergy);
         allergy.setPetPassport(this);
+    }
+
+    public void addMedicalRecord(MedicalRecord record) {
+        medicalRecords.add(record);
+        record.setPetPassport(this);
     }
 }

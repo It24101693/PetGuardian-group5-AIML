@@ -342,6 +342,21 @@ CREATE TABLE IF NOT EXISTS ai_health_assessments (
     INDEX idx_risk (risk_level)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- AI Symptom Scans (Image-based screening)
+CREATE TABLE IF NOT EXISTS ai_symptom_scans (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    pet_id BIGINT NOT NULL,
+    image_url LONGTEXT,
+    disease_name VARCHAR(255),
+    probability DOUBLE,
+    severity VARCHAR(50),
+    precautionary_advice TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (pet_id) REFERENCES pets(id) ON DELETE CASCADE,
+    INDEX idx_pet (pet_id),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ============================================
 -- 10. NOTIFICATIONS
 -- ============================================

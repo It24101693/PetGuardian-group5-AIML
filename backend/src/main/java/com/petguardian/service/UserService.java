@@ -42,12 +42,46 @@ public class UserService {
 
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            // Basic password check for now
+            // Basic password check
             if (user.getPasswordHash().equals(password)) {
+                // Admin can log in regardless of which role tab was selected
+                if (user.getRole() == User.UserRole.ADMIN) {
+                    return user;
+                }
+                // For owners and vets, optionally verify role matches
                 return user;
             }
         }
 
         throw new RuntimeException("Invalid credentials");
+    }
+
+    public java.util.List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    public User getUser(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    @Transactional
+    public User updateUserRole(Long id, User.UserRole role) {
+        User user = getUser(id);
+        user.setRole(role);
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public User deactivateUser(Long id) {
+        User user = getUser(id);
+        user.setIsActive(false);
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteUser(Long id) {
+        User user = getUser(id);
+        userRepository.delete(user);
     }
 }
